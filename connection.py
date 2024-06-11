@@ -3,6 +3,8 @@ import socket
 import time
 
 def connect_to_wifi(ssid, password):
+    print("Attempting to connect to wifi")
+
     # Turn off the WiFi Access Point
     ap_if = network.WLAN(network.AP_IF)
     ap_if.active(False)
