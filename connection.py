@@ -1,12 +1,30 @@
 import network
-import socket
 import time
+from umqtt.robust import MQTTClient
+import os
+import gc
 import sys
 
 def connect_to_wifi(ssid, password):
+
+    """
+    Description:
+    Connects the device to the specified WiFi network.
+
+    Parameters:
+    ssid (str): The SSID of the WiFi network.
+    password (str): The password of the WiFi network.
+
+    Returns:
+    Void
+
+    Raises:
+    SystemExit: If the connection to the WiFi network fails after maximum attempts.
+    """
+
     print("Attempting to connect to wifi")
-    print("Using SSID: ", ssid)
-    print("Using PASSWORD: ", password)
+    print("SSID: ", ssid)
+    print("PASSWORD: ", password)
 
     # Turn off the WiFi Access Point
     ap_if = network.WLAN(network.AP_IF)
@@ -31,12 +49,67 @@ def connect_to_wifi(ssid, password):
     
     print("Connected to WiFi", wifi.ifconfig())
 
-def make_request():
-    request = b"GET / HTTP/1.1\r\nHost: www.dtu.dk\r\n\r\n"
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("www.dtu.dk", 80))
-    s.settimeout(2)
-    s.send(request)
-    result = s.recv(10000)
-    print(result)
-    s.close()
+def publish_and_subscribe_to_adafruit_io(aio_username, aio_key, aio_feedname):
+
+    """
+    Description:
+    Connects to the Adafruit IO MQTT broker and handles both publishing and subscribing to a specified feed.
+
+    Parameters:
+    aio_username (str): The Adafruit IO username.
+    aio_key (str): The Adafruit IO key.
+    aio_feedname (str): The name of the Adafruit IO feed.
+
+    Returns:
+    None
+
+    Raises:
+    SystemExit: If the connection to the MQTT server fails.
+    """
+    
+    random_num = int.from_bytes(os.urandom(3), 'little')
+    mqtt_client_id = bytes('client_'+str(random_num), 'utf-8')
+
+    ADAFRUIT_IO_URL = b'io.adafruit.com' 
+
+    client = MQTTClient(client_id=mqtt_client_id, 
+                        server=ADAFRUIT_IO_URL, 
+                        user=aio_username, 
+                        password=aio_key,
+                        ssl=False)
+                        
+    try:            
+        client.connect()
+    except Exception as e:
+        print('Could not connect to MQTT server {}{}'.format(type(e).__name__, e))
+        sys.exit()
+
+    mqtt_feedname = bytes('{:s}/feeds/{:s}'.format(aio_username, aio_feedname), 'utf-8')
+    client.set_callback(cb)      
+    client.subscribe(mqtt_feedname)  
+    PUBLISH_PERIOD_IN_SEC = 10 
+    SUBSCRIBE_CHECK_PERIOD_IN_SEC = 0.5 
+    accum_time = 0
+    while True:
+        try:
+            # Publish
+            if accum_time >= PUBLISH_PERIOD_IN_SEC:
+                free_heap_in_bytes = gc.mem_free()
+                print('Publish:  freeHeap = {}'.format(free_heap_in_bytes))
+                client.publish(mqtt_feedname,    
+                            bytes(str(free_heap_in_bytes), 'utf-8'), 
+                            qos=0) 
+                accum_time = 0                
+            
+            # Subscribe.  Non-blocking check for a new message.  
+            client.check_msg()
+
+            time.sleep(SUBSCRIBE_CHECK_PERIOD_IN_SEC)
+            accum_time += SUBSCRIBE_CHECK_PERIOD_IN_SEC
+        except KeyboardInterrupt:
+            client.disconnect()
+            sys.exit()
+
+def cb(topic, msg):
+    print('Subscribe:  Received Data:  Topic = {}, Msg = {}\n'.format(topic, msg))
+    free_heap = int(str(msg,'utf-8'))
