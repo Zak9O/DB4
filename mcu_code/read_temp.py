@@ -4,13 +4,8 @@
     Then you can pass the sensors to the read_temp function
 """
 
-from machine import Pin
-from machine import ADC
-from machine import DAC
+from machine import Pin, ADC, DAC
 from math import log
-
-import machine
-import utime
 
 class TemperatureSensor:
 
@@ -37,7 +32,7 @@ class TemperatureSensor:
     def read_temp(self):
         raw_read = []
         # Collect NUM_SAMPLES
-        for i in range(1, self.NUM_SAMPLES+1):
+        for _ in range(1, self.NUM_SAMPLES+1):
             raw_read.append(self.temp_sens.read())
 
         # Average of the NUM_SAMPLES and look it up in the table

@@ -44,24 +44,13 @@ class StepperMotor:
                         self.frequency = freq
                         self.pwm.freq(freq)
                         time.sleep(delay)
-                        print(freq)
 
         def decrease_speed(self, start_freq, end_freq, step, delay):
                 for freq in range(start_freq, end_freq, -step):
                         self.frequency = freq
                         self.pwm.freq(freq)
                         time.sleep(delay)
-                        print(freq)
 
         def run_constant_speed(self, frequency):
                 self.setFreq(frequency)
                 self.start()
-                while True:
-                    print("Going with: ", frequency)
-                    time.sleep(1)
-
-sm = StepperMotor(17,21)
-
-sm.setDutyCycle(512)
-
-sm.run_constant_speed(500)
