@@ -4,17 +4,22 @@ from read_temp import *
 from oled_screen import *
 import time
 count = 0
+tempsens = TemperatureSensor()
 
-temp = measure_temp()
+sm = StepperMotor(17,21)
+sm.setDutyCycle(512)
+sm.run_constant_speed(500)
+
+temp = tempsens.measure_temp()
 od = OD()
 screen_on(str(temp),str(od))
 
+
 while True:
-    run_with_pwm()
     time.sleep(0.001)
 
     if count == 100:
-        temp = measure_temp()
+        temp = tempsens.measure_temp()
         time.sleep(0.001)
         od = OD()
         screen_on(str(temp), str(od))
