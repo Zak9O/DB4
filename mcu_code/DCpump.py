@@ -1,4 +1,3 @@
-import time
 import machine
 
 class DCpump:
@@ -24,11 +23,3 @@ class DCpump:
         self.setDutyCycle(duty)
         self.InC.value(1)
         self.InD.value(0)
-        while True:
-            print("Running pump at duty cycle: ", duty)
-            time.sleep(1)  # Just keep running
-
-motor = DCpump(12, 27, 15)
-motor.run(512)
-
-#motor.run(450)  # Run the pump continuously at a duty cycle of 450
