@@ -3,7 +3,7 @@ import machine
 
 class StepperMotor:
         
-        DEFAULT_delay = 0.1
+        DEFAULT_delay = 0
         DEFAULT_frequency = 800
         DEFAULT_duty_cycle = 0 
         

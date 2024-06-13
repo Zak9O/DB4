@@ -12,8 +12,8 @@ kI = 1
 kD = 1
 STEP_DELAY = 1 # in seconds
 
-STEP_PIN_NUM = 1
-DIR_PIN_NUM = 1
+STEP_PIN_NUM = 17
+DIR_PIN_NUM = 21
 
 # The further away from the setpoint the higher a value is produced by the PID
 # sample time makes the PID change it's value once very X seconds
@@ -25,9 +25,12 @@ pump = pump.StepperMotor(STEP_PIN_NUM, DIR_PIN_NUM)
 while True:
     current_temperature = temp_sensor.read_temp()
     pid_value = pid(current_temperature)
+    print("Pid value: {}".format(pid_value))
+    print("Temperature: {}".format(current_temperature))
+    print("Frequency: {}".format(-pid_value * 50))
 
-    if pid_value > 1:
-        pump.increase_speed(pid_value * 1000)
+    if pid_value < -1:
+        pump.run_constant_speed(-int(pid_value) * 50)
     else:
         pump.stop()
 
