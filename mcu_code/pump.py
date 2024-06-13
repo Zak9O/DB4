@@ -5,7 +5,7 @@ class StepperMotor:
         
         DEFAULT_delay = 0
         DEFAULT_frequency = 800
-        DEFAULT_duty_cycle = 0 
+        DEFAULT_duty_cycle = 512
         
         def __init__(self, step_pin_number: int, dir_pin_number : int):
                 self.step_pin = machine.Pin(step_pin_number, machine.Pin.OUT)
@@ -17,6 +17,7 @@ class StepperMotor:
                 self.direction = 0 #clockwise
                 
                 self.pwm = machine.PWM(step_pin_number, machine.Pin.OUT)
+                self.pwm.duty(self.duty_cycle)
                 
         def start(self):
                 self.pwm.duty(self.duty_cycle)
