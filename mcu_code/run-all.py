@@ -20,6 +20,7 @@ screen_on(str(temp),str(od))
 
 while True:
     time.sleep(0.001)
+    
     if count == 100:
         temp = tempsens.measure_temp()
         time.sleep(0.001)
