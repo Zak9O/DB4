@@ -2,14 +2,14 @@ from pump import *
 from ODmeasure import *
 from read_temp import *
 from oled_screen import *
-from DCpump import *
+from mcu_code.dc_pump import *
 import time
 
 count = 0
 
 sm = StepperMotor(17,21)
 sm.run_constant_speed(400)
-dcpump = DCpump(12, 27, 15)
+dcpump = smallDCpump(12, 27, 15)
 dcpump.run(512)
 tempsens = TemperatureSensor()
 odsens = OD()

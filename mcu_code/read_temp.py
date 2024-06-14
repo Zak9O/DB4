@@ -17,7 +17,7 @@ class TemperatureSensor:
     NUM_SAMPLES = 25
     THERM_B_COEFF = 3950
     ADC_MAX = 1023
-    ADC_VMAX = 3.3
+    ADC_VMAX = 3.15
 
     def __init__(self, TENP_SENS_ADC_PIN_NO = 32):
         self.temp_sens = self.init_temp_sensor(TENP_SENS_ADC_PIN_NO)
