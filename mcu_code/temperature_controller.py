@@ -2,13 +2,13 @@ from PID import PID
 import read_temp
 from dc_pump import *
 import time
-
+from oled_screen import *
 # kP, kI, kD, setpoint is the desired value, scale is micro seconds
 
 TARGET_TEMP = 17
-kP = -2
+kP = -1.5
 kI = -0.4
-kD = -2
+kD = -1.5
 STEP_DELAY = 1 # in seconds
 
 STEP_PIN_NUM = 17
@@ -28,6 +28,8 @@ big_pump = dc_pump(16, 17, 21)
 
 start_time = time.time()
 
+count = 0
+
 while True:
     current_temperature = temp_sensor.read_temp()
     pid_value = pid(current_temperature)
@@ -36,14 +38,20 @@ while True:
     print("Elapsed time: {:.2f} seconds".format(elapsed_time))
     print("Pid value: {}".format(pid_value))
     print("Temperature: {}".format(current_temperature))
-    print("___________")
+    print("\n")
 
-    if pid_value >= 50:
+    if pid_value >= 25:
         big_pump.run_freq(int(pid_value))
     else:
         big_pump.stop()
 
-    with open('exp_1.2.txt', 'a') as f:
-        f.write(f"{elapsed_time:.2f},{pid_value},{current_temperature}\n")
+    screen_on(str(current_temperature), str(pid_value))
 
+    if count == 60:
+        with open('weekend_exp_final.txt', 'a') as f:
+            f.write(f"{elapsed_time:.2f},{pid_value},{current_temperature}\n")
+        count = 0
+
+    count += 1
     time.sleep(STEP_DELAY)
+    
