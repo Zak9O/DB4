@@ -49,7 +49,64 @@ def connect_to_wifi(ssid, password):
     
     print("Connected to WiFi", wifi.ifconfig())
 
-def publish_and_subscribe_to_adafruit_io(aio_username, aio_key, aio_feedname):
+def establish_mqtt_connection(aio_username, aio_key, aio_feedname):
+    random_num = int.from_bytes(os.urandom(3), 'little')
+    mqtt_client_id = bytes('client_'+str(random_num), 'utf-8')
+
+    ADAFRUIT_IO_URL = b'io.adafruit.com' 
+
+    client = MQTTClient(client_id=mqtt_client_id, 
+                        server=ADAFRUIT_IO_URL, 
+                        user=aio_username, 
+                        password=aio_key,
+                        ssl=False)
+                        
+    try:            
+        client.connect()
+    except Exception as e:
+        print('Could not connect to MQTT server {}{}'.format(type(e).__name__, e))
+        sys.exit()
+
+    mqtt_feedname = bytes('{:s}/feeds/{:s}'.format(aio_username, aio_feedname), 'utf-8')
+    client.set_callback(cb)      
+    client.subscribe(mqtt_feedname)
+
+    return {
+        'client': client,
+        'feedname': mqtt_feedname,
+        'username': aio_username,
+        'key': aio_key,
+        'client_id': mqtt_client_id
+    } 
+
+def publish_and_request_using_adafruit_io(value_to_be_published, mqtt_info):
+
+    PUBLISH_PERIOD_IN_SEC = 10 
+    SUBSCRIBE_CHECK_PERIOD_IN_SEC = 0.5 
+    accum_time = 0
+
+    client = mqtt_info['client']
+    feedname = mqtt_info['feedname']
+
+
+    try:
+        # Publish
+        if accum_time >= PUBLISH_PERIOD_IN_SEC:
+            print('We published: {}'.format(value_to_be_published))
+            client.publish(feedname, (str(value_to_be_published), 'utf-8'), qos = 0) 
+            accum_time = 0                
+        
+        # Subscribe.  Non-blocking check for a new message.  
+        client.check_msg()
+
+        time.sleep(SUBSCRIBE_CHECK_PERIOD_IN_SEC)
+        accum_time += SUBSCRIBE_CHECK_PERIOD_IN_SEC
+
+    except KeyboardInterrupt:
+        client.disconnect()
+        sys.exit()
+
+def check_adafruit_connection_with_free_heap(aio_username, aio_key, aio_feedname):
 
     """
     Description:
@@ -111,5 +168,4 @@ def publish_and_subscribe_to_adafruit_io(aio_username, aio_key, aio_feedname):
             sys.exit()
 
 def cb(topic, msg):
-    print('Subscribe:  Received Data:  Topic = {}, Msg = {}\n'.format(topic, msg))
-    free_heap = int(str(msg,'utf-8'))
+    print(f"Received message: {msg} on topic: {topic}")
