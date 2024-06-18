@@ -5,6 +5,8 @@ import os
 import gc
 import sys
 
+message = 0
+
 def connect_to_wifi(ssid, password):
 
     """
@@ -110,6 +112,19 @@ def publish_and_request_using_adafruit_io(value_to_be_published, mqtt_info):
     
     return value_to_be_published
 
+def request_using_adafruit_io(mqtt_info):
+    client = mqtt_info['client']
+    print(client)
+    while True:
+        try:
+            print('Trying to receive message')
+            client.wait_msg()
+            break
+        except KeyboardInterrupt:
+            print('Interupted by user')
+            client.disconnect()
+            sys.exit()
+
 def check_adafruit_connection_with_free_heap(aio_username, aio_key, aio_feedname):
 
     """
@@ -172,4 +187,5 @@ def check_adafruit_connection_with_free_heap(aio_username, aio_key, aio_feedname
             sys.exit()
 
 def cb(topic, msg):
-    print(f"Received message: {msg} on topic: {topic}") 
+    message = msg
+    print(f"Received message: {msg} on topic: {topic}")
