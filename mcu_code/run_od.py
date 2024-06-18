@@ -1,9 +1,9 @@
-from ODmeasure import *
+from mcu_code.optical_density import *
 import machine
 from oled_screen import *
 import time
 
-odsens = OD()
+odsens = optical_density()
 od = odsens.readOD()
 count = 0
 

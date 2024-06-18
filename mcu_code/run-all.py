@@ -1,5 +1,5 @@
 from pump import *
-from ODmeasure import *
+from mcu_code.optical_density import *
 from read_temp import *
 from oled_screen import *
 from dc_pump import *
@@ -10,7 +10,7 @@ count = 0
 dcpump = dc_pump(12, 27, 15)
 dcpump.run(256)
 tempsens = TemperatureSensor()
-odsens = OD()
+odsens = optical_density()
 
 temp = tempsens.read_temp()
 od = odsens.readOD()

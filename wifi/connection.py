@@ -61,7 +61,8 @@ def establish_mqtt_connection(aio_username, aio_key, aio_feedname):
                         password=aio_key,
                         ssl=False)
                         
-    try:            
+    try:
+        print('Trying connection to MQTT')            
         client.connect()
     except Exception as e:
         print('Could not connect to MQTT server {}{}'.format(type(e).__name__, e))
@@ -80,7 +81,6 @@ def establish_mqtt_connection(aio_username, aio_key, aio_feedname):
     } 
 
 def publish_and_request_using_adafruit_io(value_to_be_published, mqtt_info):
-
     PUBLISH_PERIOD_IN_SEC = 10 
     SUBSCRIBE_CHECK_PERIOD_IN_SEC = 0.5 
     accum_time = 0
@@ -88,23 +88,27 @@ def publish_and_request_using_adafruit_io(value_to_be_published, mqtt_info):
     client = mqtt_info['client']
     feedname = mqtt_info['feedname']
 
+    while True:
+        try:
+            # Publish
+            if accum_time >= PUBLISH_PERIOD_IN_SEC:
+                print('Trying to publish: {}'.format(value_to_be_published))
+                client.publish(feedname, bytes(str(value_to_be_published), 'utf-8'), qos = 0)
+                accum_time = 0
+                break              
+                
+            # Subscribe.
+            client.check_msg()
 
-    try:
-        # Publish
-        if accum_time >= PUBLISH_PERIOD_IN_SEC:
-            print('We published: {}'.format(value_to_be_published))
-            client.publish(feedname, (str(value_to_be_published), 'utf-8'), qos = 0) 
-            accum_time = 0                
-        
-        # Subscribe.  Non-blocking check for a new message.  
-        client.check_msg()
+            time.sleep(SUBSCRIBE_CHECK_PERIOD_IN_SEC)
+            accum_time += SUBSCRIBE_CHECK_PERIOD_IN_SEC
 
-        time.sleep(SUBSCRIBE_CHECK_PERIOD_IN_SEC)
-        accum_time += SUBSCRIBE_CHECK_PERIOD_IN_SEC
-
-    except KeyboardInterrupt:
-        client.disconnect()
-        sys.exit()
+        except KeyboardInterrupt:
+            client.disconnect()
+            print('\nInterrupted by user\n')
+            sys.exit()
+    
+    return value_to_be_published
 
 def check_adafruit_connection_with_free_heap(aio_username, aio_key, aio_feedname):
 
@@ -168,4 +172,4 @@ def check_adafruit_connection_with_free_heap(aio_username, aio_key, aio_feedname
             sys.exit()
 
 def cb(topic, msg):
-    print(f"Received message: {msg} on topic: {topic}")
+    print(f"Received message: {msg} on topic: {topic}") 

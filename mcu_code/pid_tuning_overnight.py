@@ -21,13 +21,13 @@ optical_density_sensor = OpticalDensity()
 def main():
 
     TARGET_TEMP = 17
-    STEP_DELAY = 1 # in seconds
+    STEP_DELAY = 10 # in seconds
 
-    check_all_wifis()
-    connect_to_wifi('DB4GROUP2', '12345678')
+    #check_all_wifis()
+    #connect_to_wifi('DB4GROUP2', '12345678')
 
-    temperature_client = establish_mqtt_connection(ADAFRUIT_USERNAME, ADAFRUIT_KEY, 'temperature')
-    optical_density_client = establish_mqtt_connection(ADAFRUIT_USERNAME, ADAFRUIT_KEY, 'optical-density')
+    #temperature_client = establish_mqtt_connection(ADAFRUIT_USERNAME, ADAFRUIT_KEY, 'temperature')
+    #optical_density_client = establish_mqtt_connection(ADAFRUIT_USERNAME, ADAFRUIT_KEY, 'optical-density')
 
     kP = -2
     kI = -0.4
@@ -47,15 +47,15 @@ def main():
 
         elapsed_time = time.time() - start_time
 
-        temperature = publish_and_request_using_adafruit_io(temperature_from_sensor, temperature_client)
-        optical_density = publish_and_request_using_adafruit_io(optical_density_from_sensor, optical_density_client)
+        #temperature = publish_and_request_using_adafruit_io(temperature_from_sensor, temperature_client)
+        #optical_density = publish_and_request_using_adafruit_io(optical_density_from_sensor, optical_density_client)
 
-        pid_value = pid(temperature)
+        pid_value = pid(temperature_from_sensor)
 
         print("Elapsed time: {:.2f} seconds".format(elapsed_time))
         print("Pid value: {}".format(pid_value))
-        print("Temperature: {}".format(temperature))
-        print("Optical Density: {}".format(optical_density))
+        print("Temperature: {}".format(temperature_from_sensor))
+        print("Optical Density: {}".format(optical_density_from_sensor))
         print("\n")
 
         if pid_value >= 50:
@@ -64,8 +64,8 @@ def main():
             big_pump.stop()
 
         # TODO: When we want to log data in a file:
-        # with open('exp_1.2.txt', 'a') as f:
-        #    f.write(f"{elapsed_time:.2f},{pid_value},{temperature}\n")
+        with open('mon-to-tue.txt', 'a') as f:
+            f.write(f"{elapsed_time:.2f},{pid_value},{temperature_from_sensor}\n")
 
         time.sleep(STEP_DELAY)
 
