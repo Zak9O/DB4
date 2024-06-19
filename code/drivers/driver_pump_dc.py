@@ -21,8 +21,8 @@ class DcPump:
 
     def run(self, duty):
         self.setDutyCycle(duty)
-        self.InC.value(1)
-        self.InD.value(0)
+        self.InC.value(0)
+        self.InD.value(1)
 
     def run_freq(self,freq_val):
         self.pwmA.freq(freq_val)

@@ -8,7 +8,7 @@ from drivers.optical_density import *
 
 
 ADAFRUIT_USERNAME = 'linusjuni'
-ADAFRUIT_KEY = 'aio_LQdv56AWAJOdSE43CJ1grh9n4flz'
+ADAFRUIT_KEY = 'aio_VxPe46XaH0DLnHZzzj2Qi60tXTKA'
 
 # Creating objects
 under_water_pump = DcPump(12, 27, 15)
@@ -42,11 +42,14 @@ def main():
 
     temp_sensor = TemperatureSensor()
 
-    remote_controlled_status = request_using_adafruit_io(remote_controlled_status_client)
-    print(remote_controlled_status)
-
     while True:
-        if remote_controlled_status == 1:
+        remote_controlled_status = request_using_adafruit_io(remote_controlled_status_client)
+        remote_status_mode = get_message()
+
+        print("The remote status is:", remote_status_mode)
+        time.sleep(2)
+
+        if remote_status_mode == 0 or remote_controlled_status == None:
             temperature_from_sensor = temp_sensor.read_temp()
             optical_density_from_sensor = optical_density_sensor.readOD()
 
@@ -73,13 +76,12 @@ def main():
             #    f.write(f"{elapsed_time:.2f},{pid_value},{temperature}\n")
 
             time.sleep(STEP_DELAY)
-        else:
-            print("starting")
+
+        elif remote_status_mode == 1:
             request_using_adafruit_io(cooling_pump_client)
-            print("doing")
-            print(message)
-            big_pump.run_freq(int(message))
-            print("finished")
+            pid_value = get_message()
+            print("The PID value is", pid_value)
+            big_pump.run_freq(int(pid_value))
 
 if __name__ == "__main__":
     main()

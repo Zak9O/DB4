@@ -8,7 +8,6 @@ under_water_pump = DcPump(12, 27, 15)
 big_pump = DcPump(16, 17, 21)
 
 temp_sens = TemperatureSensor()
-od_sensor = OpticalDensity()
 
 while True:
     try:
@@ -26,12 +25,11 @@ while True:
     big_pump.run_freq(freq)
     
     for i in range(10):
-        temp = temp_sens.read_temp()
-        od = od_sensor.readOD()
-        screen_on(str(temp), str(od))
-        print("Waited for {} seconds. Temp {}, OD: {}".format(i+1, temp, od))
+        #temp = temp_sens.read_temp()
+        #screen_on(str(temp),"wtf")
+        #print("Waited for {} seconds. Temp {}".format(i+1, temp))
         time.sleep(1)
 
     under_water_pump.stop()
     big_pump.stop()
-    screen_on("Waiting for", "input")
+    #screen_on("Waiting for", "input")

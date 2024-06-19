@@ -114,11 +114,10 @@ def publish_and_request_using_adafruit_io(value_to_be_published, mqtt_info):
 
 def request_using_adafruit_io(mqtt_info):
     client = mqtt_info['client']
-    print(client)
     while True:
         try:
             print('Trying to receive message')
-            client.wait_msg()
+            client.check_msg()
             break
         except KeyboardInterrupt:
             print('Interupted by user')
@@ -189,3 +188,6 @@ def check_adafruit_connection_with_free_heap(aio_username, aio_key, aio_feedname
 def cb(topic, msg):
     message = msg
     print(f"Received message: {msg} on topic: {topic}")
+
+def get_message():
+    return int(message)
