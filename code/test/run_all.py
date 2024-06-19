@@ -5,7 +5,7 @@ from drivers.driver_pump_dc import *
 import time
 
 under_water_pump = DcPump(12, 27, 15)
-big_pump = DcPump(16, 17, 21)
+big_pump = DcPump(32, 15, 14)
 
 temp_sens = TemperatureSensor()
 od_sensor = OpticalDensity()

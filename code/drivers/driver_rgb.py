@@ -1,5 +1,5 @@
 from machine import Pin, I2C
-import tcs34725 as rgb_driver
+import drivers.tcs34725 as rgb_driver
 
 """
 Access the rgb method by accessing the rgb field of the class

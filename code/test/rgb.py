@@ -1,5 +1,5 @@
 import time
-import drivers.rgb as rgb_driver
+import drivers.driver_rgb as rgb_driver
 import drivers.oled_screen
 
 sensor = rgb_driver.RGBSensor()
