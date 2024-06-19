@@ -1,8 +1,8 @@
-from PID import PID
-import read_temp
-from dc_pump import *
+from drivers.PID import PID
+import drivers.read_temp as read_temp
+from drivers.driver_pump_dc import *
 import time
-from oled_screen import *
+from drivers.oled_screen import *
 # kP, kI, kD, setpoint is the desired value, scale is micro seconds
 
 TARGET_TEMP = 17

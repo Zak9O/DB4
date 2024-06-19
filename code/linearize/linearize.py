@@ -8,7 +8,6 @@ from machine import Pin
 from machine import ADC
 from machine import DAC
 
-import machine
 import utime
 
 ADC_DELAY = 10

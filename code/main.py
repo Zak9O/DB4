@@ -1,10 +1,10 @@
-from connection import *
-from wifi_list import *
-from PID import PID
-from read_temp import *
-from dc_pump import *
+from wifi.connection import *
+from wifi.wifi_list import *
+from drivers.PID import PID
+from drivers.read_temp import *
+from drivers.driver_pump_dc import *
 import time
-from optical_density import *
+from drivers.optical_density import *
 
 
 ADAFRUIT_USERNAME = 'linusjuni'

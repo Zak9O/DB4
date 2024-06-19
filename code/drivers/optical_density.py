@@ -6,7 +6,4 @@ class OpticalDensity:
 
     def readOD(self):
         value = self.sensor.read() 
-        print("The optical density is: ", value)
         return value
-
- 
