@@ -11,10 +11,10 @@ ADAFRUIT_USERNAME = 'linusjuni'
 ADAFRUIT_KEY = 'aio_LQdv56AWAJOdSE43CJ1grh9n4flz'
 
 # Creating objects
-under_water_pump = dc_pump(12, 27, 15)
+under_water_pump = DcPump(12, 27, 15)
 under_water_pump.stop()
 
-big_pump = dc_pump(16, 17, 21)
+big_pump = DcPump(16, 17, 21)
 
 optical_density_sensor = OpticalDensity()
 

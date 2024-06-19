@@ -1,6 +1,6 @@
 import machine
 
-class dc_pump:
+class DcPump:
     
     DEFAULT_FREQ = 1000
     DEFAULT_DUTY = 500

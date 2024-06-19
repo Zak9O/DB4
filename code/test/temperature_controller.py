@@ -21,10 +21,10 @@ pid.output_limits = (0, 1000)
 
 temp_sensor = read_temp.TemperatureSensor()
 
-under_water_pump = dc_pump(12, 27, 15)
+under_water_pump = DcPump(12, 27, 15)
 under_water_pump.stop()
 
-big_pump = dc_pump(16, 17, 21)
+big_pump = DcPump(16, 17, 21)
 
 start_time = time.time()
 
