@@ -12,6 +12,7 @@ COOLER_KP = -2
 COOLER_KI = -0.4
 COOLER_KD = -2 
 
+
 class Main:
 
     def run(self):
@@ -36,6 +37,7 @@ class Main:
             # This is runs every x seconds
             if count == 10:
                 print("Syncing and saving data")
+                # TODO Change 300 to the value of the od sensor
                 self.sync_data_to_server(self.current_temperature, 300)
                 self.save_data_locally(self.current_temperature, 300)
                 
@@ -50,10 +52,9 @@ class Main:
         self.coolerPID.output_limits = (0, 200)
 
         self.sensor_temperature = TemperatureSensor()
-        # TODO uncomment
-        # self.sensor_od = driver_od.create() 
+        self.sensor_od = driver_od.create() 
 
-        self.pumpCooler = DcPump(16, 17, 21)
+        self.pumpCooler = DcPump(17, 21, 27)
 
         self.server = server_module.Server(self.coolerPID)
 
@@ -94,19 +95,17 @@ class Main:
         server.publish("cooler_kD", - COOLER_KD)
 
     def cooling_actions(self):
-            # TODO: Uncomment
-            # current_temp = sensor_temperature.read_temp()
-            self.current_temperature = 20
+            self.current_temperature = self.sensor_temperature.read_temp()
             pid_value = self.coolerPID(self.current_temperature)
 
             print("Running pump with frequency: {}".format(pid_value))
-            # TODO: Uncomment
-            # pumpCooler.run(pid_value)
+            self.pumpCooler.run(int(pid_value))
 
     def sync_data_to_server(self, temperature, od):
         server = self.server
         server.publish("temperature", temperature)
         server.publish("optical-density", od)
+        server.publish("cooler_pump_rate", self.pumpCooler.get_flow_rate())
 
     def save_data_locally(self, temperature, od):
         elapsed_time = time.time() - self.start_time

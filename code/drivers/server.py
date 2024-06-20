@@ -8,7 +8,7 @@ class Server:
     def __init__(self, coolerPID) -> None:
         self.ADAFRUIT_IO_URL = b'io.adafruit.com'
         self.ADAFRUIT_USERNAME = b'linusjuni'
-        self.ADAFRUIT_IO_KEY = b'aio_MkPX79faLlkVhfWhpRlP36SaTLXF'
+        self.ADAFRUIT_IO_KEY = b'aio_hpDP858ioCWsMopLzcphdY0323Ui'
 
         self.PID_SWITCH = 0
         self.coolerPID = coolerPID
