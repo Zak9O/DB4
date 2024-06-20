@@ -1,87 +1,117 @@
-from wifi.connection import *
-from wifi.wifi_list import *
 from drivers.PID import PID
-from drivers.read_temp import *
-from drivers.driver_pump_dc import *
+from drivers.read_temp import TemperatureSensor
+from drivers.driver_pump_dc import DcPump
+import drivers.driver_od as driver_od
+import drivers.server as server_module
 import time
-from drivers.optical_density import *
+import os
 
+TARGET_TEMP = 17
+STEP_DELAY = 1 # in seconds
+COOLER_KP = -2
+COOLER_KI = -0.4
+COOLER_KD = -2 
 
-ADAFRUIT_USERNAME = 'linusjuni'
-ADAFRUIT_KEY = 'aio_VxPe46XaH0DLnHZzzj2Qi60tXTKA'
+class Main:
 
-# Creating objects
-under_water_pump = DcPump(12, 27, 15)
-under_water_pump.stop()
+    def run(self):
+        print("Starting Program")
 
-big_pump = DcPump(16, 17, 21)
+        self.initialize_variables()
 
-optical_density_sensor = OpticalDensity()
+        self.connect_server()
+        print("Connected server successfully")
 
-def main():
+        count = 0
 
-    TARGET_TEMP = 17
-    STEP_DELAY = 1 # in seconds
+        self.start_time = time.time()
 
-    check_all_wifis()
-    connect_to_wifi('DB4GROUP2', '12345678')
+        while True:
+            self.cooling_actions()
+            
+            # TODO add control for food pump
 
-    temperature_client = establish_mqtt_connection(ADAFRUIT_USERNAME, ADAFRUIT_KEY, 'temperature')
-    optical_density_client = establish_mqtt_connection(ADAFRUIT_USERNAME, ADAFRUIT_KEY, 'optical-density')
-    remote_controlled_status_client = establish_mqtt_connection(ADAFRUIT_USERNAME, ADAFRUIT_KEY, 'remote-controlled-status')
-    cooling_pump_client = establish_mqtt_connection(ADAFRUIT_USERNAME, ADAFRUIT_KEY, 'cooling-pump')
+            self.server.client.check_msg()
 
-    kP = -2
-    kI = -0.4
-    kD = -2
+            # This is runs every x seconds
+            if count == 10:
+                print("Syncing and saving data")
+                self.sync_data_to_server(self.current_temperature, 300)
+                self.save_data_locally(self.current_temperature, 300)
+                
+                count = 0
 
-    start_time = time.time()
-    
-    pid = PID(kP, kI, kD, setpoint=TARGET_TEMP, sample_time=0.1, scale="s") 
-    pid.output_limits = (0, 1000)
-
-    temp_sensor = TemperatureSensor()
-
-    while True:
-        remote_controlled_status = request_using_adafruit_io(remote_controlled_status_client)
-        remote_status_mode = get_message()
-
-        print("The remote status is:", remote_status_mode)
-        time.sleep(2)
-
-        if remote_status_mode == 0 or remote_controlled_status == None:
-            temperature_from_sensor = temp_sensor.read_temp()
-            optical_density_from_sensor = optical_density_sensor.readOD()
-
-            elapsed_time = time.time() - start_time
-
-            temperature = publish_and_request_using_adafruit_io(temperature_from_sensor, temperature_client)
-            optical_density = publish_and_request_using_adafruit_io(optical_density_from_sensor, optical_density_client)
-
-            pid_value = pid(temperature)
-
-            print("Elapsed time: {:.2f} seconds".format(elapsed_time))
-            print("Pid value: {}".format(pid_value))
-            print("Temperature: {}".format(temperature))
-            print("Optical Density: {}".format(optical_density))
-            print("\n")
-
-            if pid_value >= 50:
-                big_pump.run_freq(int(pid_value))
-            else:
-                big_pump.stop()
-
-            # TODO: When we want to log data in a file:
-            # with open('exp_1.2.txt', 'a') as f:
-            #    f.write(f"{elapsed_time:.2f},{pid_value},{temperature}\n")
-
+            print("Tunings: {}".format(self.coolerPID.tunings))
             time.sleep(STEP_DELAY)
+            count += 1
 
-        elif remote_status_mode == 1:
-            request_using_adafruit_io(cooling_pump_client)
-            pid_value = get_message()
-            print("The PID value is", pid_value)
-            big_pump.run_freq(int(pid_value))
+    def initialize_variables(self):
+        self.coolerPID = PID(COOLER_KP, COOLER_KI, COOLER_KD, setpoint=TARGET_TEMP, sample_time=STEP_DELAY, scale="s") 
+        self.coolerPID.output_limits = (0, 200)
 
-if __name__ == "__main__":
-    main()
+        self.sensor_temperature = TemperatureSensor()
+        # TODO uncomment
+        # self.sensor_od = driver_od.create() 
+
+        self.pumpCooler = DcPump(16, 17, 21)
+
+        self.server = server_module.Server(self.coolerPID)
+
+        self.initialize_data_file()
+
+    def initialize_data_file(self):
+        self.try_make_data_dir()
+        self.file_name = self.make_file_name()
+
+        with open(self.file_name, 'w') as f:
+           f.write(f"Time,Temperature,Optical Density\n")
+
+        print(f"Created: {self.file_name}")
+
+    def try_make_data_dir(self):
+        try:
+            os.mkdir("data")
+        except OSError as e:
+            if e.errno == 17:
+                pass
+            else:
+                raise
+
+    def make_file_name(self):
+        amount = len(os.listdir("data")) + 1
+        return f"data/data_{amount}.csv";
+
+    def connect_server(self):
+        server = self.server
+        server.connect_wifi()
+        server.connect_server()
+        server.subscribe()
+        
+        # Sync the server with values
+        # Minus added because values are positive on the server
+        server.publish("cooler_kP", - COOLER_KP)
+        server.publish("cooler_kI", - COOLER_KI)
+        server.publish("cooler_kD", - COOLER_KD)
+
+    def cooling_actions(self):
+            # TODO: Uncomment
+            # current_temp = sensor_temperature.read_temp()
+            self.current_temperature = 20
+            pid_value = self.coolerPID(self.current_temperature)
+
+            print("Running pump with frequency: {}".format(pid_value))
+            # TODO: Uncomment
+            # pumpCooler.run(pid_value)
+
+    def sync_data_to_server(self, temperature, od):
+        server = self.server
+        server.publish("temperature", temperature)
+        server.publish("optical-density", od)
+
+    def save_data_locally(self, temperature, od):
+        elapsed_time = time.time() - self.start_time
+        with open(self.file_name, 'a') as f:
+           f.write(f"{elapsed_time},{temperature},{od}\n")
+        pass
+
+Main().run()

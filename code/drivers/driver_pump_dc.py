@@ -6,27 +6,20 @@ class DcPump:
     DEFAULT_DUTY = 500
 
     def __init__(self, inputC, inputD, EnableA):
-        self.InC = machine.Pin(inputC, machine.Pin.OUT)
-        self.InD = machine.Pin(inputD, machine.Pin.OUT)
-        self.EnA = machine.Pin(EnableA, machine.Pin.OUT)
+        self.in_1 = machine.Pin(inputC, machine.Pin.OUT)
+        self.in_2 = machine.Pin(inputD, machine.Pin.OUT)
+        self.enabler = machine.Pin(EnableA, machine.Pin.OUT)
 
-        self.InC.value(1)
-        self.InD.value(0)
-        self.pwmA = machine.PWM(self.EnA)
-        self.pwmA.freq(self.DEFAULT_FREQ)
-        self.pwmA.duty(self.DEFAULT_DUTY)
+        self.in_1.value(0)
+        self.in_2.value(0)
+        self.pwm = machine.PWM(self.enabler)
 
-    def setDutyCycle(self, duty):
-        self.pwmA.duty(duty)
+        self.pwm.freq(self.DEFAULT_FREQ)
+        self.pwm.duty(self.DEFAULT_DUTY)
 
-    def run(self, duty):
-        self.setDutyCycle(duty)
-        self.InC.value(0)
-        self.InD.value(1)
-
-    def run_freq(self,freq_val):
-        self.pwmA.freq(freq_val)
-        self.run(self.DEFAULT_DUTY)
+    def run(self, freq=DEFAULT_FREQ):
+        self.in_2.value(1)
+        self.pwm.freq(freq)
 
     def stop(self):
-        self.pwmA.duty(0)
+        self.in_2.value(0)
