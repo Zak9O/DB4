@@ -27,9 +27,9 @@ pwm2.duty(500)
 while True:
     print("Running motor")
 
-# import LargeDCMotor as motor
-#
-# pump = motor.LargeDCMotor(16, 17, 21)
-# pump.start()
+import LargeDCMotor as motor
+
+pump = motor.LargeDCMotor(16, 17, 21)
+pump.start()
 # while True:
 #     print("IT SHOULD FUCKING RUN YOU IDIOT")

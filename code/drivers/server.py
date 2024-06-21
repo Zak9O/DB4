@@ -8,15 +8,15 @@ class Server:
     def __init__(self, coolerPID) -> None:
         self.ADAFRUIT_IO_URL = b'io.adafruit.com'
         self.ADAFRUIT_USERNAME = b'linusjuni'
-        self.ADAFRUIT_IO_KEY = b'aio_hpDP858ioCWsMopLzcphdY0323Ui'
+        self.ADAFRUIT_IO_KEY = b'aio_kjiU52DYYJ0vhH07cyi8QrshCPLh'
 
         self.PID_SWITCH = 0
         self.coolerPID = coolerPID
         # self.feederPID = feeder
     
     def connect_wifi(self):
-        WIFI_SSID = 'Casper'
-        WIFI_PASSWORD = 'heko12345'
+        WIFI_SSID = 'DB4GROUP2'
+        WIFI_PASSWORD = '12345678'
 
         ap_if = network.WLAN(network.AP_IF)
         ap_if.active(False)

@@ -6,5 +6,5 @@ def screen_on(temp, od):
     oled = ssd1306.SSD1306_I2C(128, 32, i2c)
     oled.fill(0)
     oled.text(temp, 0, 8)
-    oled.text(od, 16, 16)
+    oled.text(od, 8, 16)
     oled.show()

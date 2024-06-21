@@ -8,9 +8,9 @@ import os
 
 TARGET_TEMP = 17
 STEP_DELAY = 1 # in seconds
-COOLER_KP = -2
+COOLER_KP = -1.5
 COOLER_KI = -0.4
-COOLER_KD = -2 
+COOLER_KD = -1.5
 
 
 class Main:
@@ -29,7 +29,8 @@ class Main:
 
         while True:
             self.cooling_actions()
-            
+            self.underwaterPump.run(200)
+
             # TODO add control for food pump
 
             self.server.client.check_msg()
@@ -50,12 +51,13 @@ class Main:
     def initialize_variables(self):
         self.coolerPID = PID(COOLER_KP, COOLER_KI, COOLER_KD, setpoint=TARGET_TEMP, sample_time=STEP_DELAY, scale="s") 
         self.coolerPID.output_limits = (0, 200)
-
+        
         self.sensor_temperature = TemperatureSensor()
-        self.sensor_od = driver_od.create() 
+        #self.sensor_od = driver_od.create() 
 
         self.pumpCooler = DcPump(17, 21, 27)
-
+        self.underwaterPump = DcPump(19,16,12)
+        
         self.server = server_module.Server(self.coolerPID)
 
         self.initialize_data_file()
@@ -97,7 +99,7 @@ class Main:
     def cooling_actions(self):
             self.current_temperature = self.sensor_temperature.read_temp()
             pid_value = self.coolerPID(self.current_temperature)
-
+            print("Temperature:", str(self.current_temperature))
             print("Running pump with frequency: {}".format(pid_value))
             self.pumpCooler.run(int(pid_value))
 
