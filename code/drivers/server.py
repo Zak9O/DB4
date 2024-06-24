@@ -8,15 +8,15 @@ class Server:
     def __init__(self, coolerPID) -> None:
         self.ADAFRUIT_IO_URL = b'io.adafruit.com'
         self.ADAFRUIT_USERNAME = b'linusjuni'
-        self.ADAFRUIT_IO_KEY = b'aio_kjiU52DYYJ0vhH07cyi8QrshCPLh'
+        self.ADAFRUIT_IO_KEY = b'aio_XutB466KSCkYPQOAjUadDZovZ20n'
 
         self.PID_SWITCH = 0
         self.coolerPID = coolerPID
         # self.feederPID = feeder
     
     def connect_wifi(self):
-        WIFI_SSID = 'DB4GROUP2'
-        WIFI_PASSWORD = '12345678'
+        WIFI_SSID = 'Casper'
+        WIFI_PASSWORD = 'heko12345'
 
         ap_if = network.WLAN(network.AP_IF)
         ap_if.active(False)
@@ -75,13 +75,6 @@ class Server:
         feedname = topic.split(b'/')[-1]
         print("Message received from server")
         print("Message: {}, feedname: {}".format(msg, feedname))
-        
-        # if(msg == b'Cool'):
-        #     self.PID_SWITCH = 1
-        # elif(msg == b'Food'):
-        #     self.PID_SWITCH = 0
-        # else:
-        #     msg = int(msg.decode('utf-8'))
     
         if feedname == b'cooler_kP':
             self.coolerPID.Kp = self.decode_k_msg(msg)
@@ -89,32 +82,3 @@ class Server:
             self.coolerPID.Ki = self.decode_k_msg(msg)
         elif feedname == b'cooler_kD':
             self.coolerPID.Kd = self.decode_k_msg(msg)
-        
-        # elif feedname == b'db4.i-value':
-        #     if self.PID_SWITCH:
-        #         # self.coolerPID.setI(msg)
-        #         pass
-        #     else:
-        #         # self.feederPID.setI(msg)
-        #         pass
-        #
-        # elif feedname == b'db4.d-value':
-        #     if self.PID_SWITCH:
-        #         # self.coolerPID.setD(msg)
-        #         pass
-        #     else:
-        #         # self.feederPID.setD(msg)
-        #         pass
-        #
-        # else:
-        #     self.PID_SWITCH = msg
-        #     if self.PID_SWITCH:
-        #         # self.publish(b'db4.p-value', self.coolerPID.P)
-        #         # self.publish(b'db4.i-value', self.coolerPID.I)
-        #         # self.publish(b'db4.d-value', self.coolerPID.D)
-        #         pass
-        #     else:
-        #         # self.publish(b'db4.p-value', self.feederPID.P)
-        #         # self.publish(b'db4.i-value', self.feederPID.I)
-        #         # self.publish(b'db4.d-value', self.feederPID.D)
-        #         pass
