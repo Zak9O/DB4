@@ -21,8 +21,7 @@ class Main:
 
         self.initialize_variables()
 
-        # TODO Make server work
-        # self.connect_server()
+        self.connect_server()
         print("Connected server successfully")
 
         count_sync = 0
@@ -37,16 +36,15 @@ class Main:
                 self.food_actions()
                 count_food = 0
 
-            # TODO Make server work
-            # self.server.client.check_msg()
+            self.server.client.check_msg()
 
             # This is runs every x seconds
             if count_sync == 10:
                 print("Syncing and saving data")
-                # TODO Make server work
-                # od = self.sensor_od.read_od()
-                # self.sync_data_to_server(self.current_temperature, od)
-                # self.save_data_locally(self.current_temperature, od)
+
+                od = self.sensor_od.read_od()
+                self.sync_data_to_server(self.current_temperature, od)
+                self.save_data_locally(self.current_temperature, od)
                 
                 count_sync = 0
 
@@ -65,7 +63,8 @@ class Main:
         self.pumpCooler = DcPump(19, 16, 12)
         self.food_pump = DcPump(17, 21, 27)
         
-        self.server = server_module.Server(self.coolerPID)
+        self.remote_controlled = False
+        self.server = server_module.Server(self.coolerPID, self.remote_controlled)
 
         self.initialize_data_file()
 
@@ -104,6 +103,10 @@ class Main:
         server.publish("cooler_kD", - COOLER_KD)
 
     def cooling_actions(self):
+
+            if self.remote_controlled:
+                return
+            
             self.current_temperature = self.sensor_temperature.read_temp()
             pid_value = self.coolerPID(self.current_temperature)
             print("Temperature:", str(self.current_temperature))
@@ -147,6 +150,7 @@ class Main:
         server.publish("temperature", temperature)
         server.publish("optical-density", od)
         server.publish("cooler_pump_rate", self.pumpCooler.get_flow_rate())
+        server.publish("cooler_pump_frequency", self.pumpCooler.freq)
 
     def save_data_locally(self, temperature, od):
         elapsed_time = time.time() - self.start_time

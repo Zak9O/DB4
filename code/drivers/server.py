@@ -5,14 +5,15 @@ import sys
 import os
 
 class Server:
-    def __init__(self, coolerPID) -> None:
+    def __init__(self, coolerPID, remote_controlled, cooler_pump) -> None:
         self.ADAFRUIT_IO_URL = b'io.adafruit.com'
         self.ADAFRUIT_USERNAME = b'linusjuni'
         self.ADAFRUIT_IO_KEY = b'aio_XutB466KSCkYPQOAjUadDZovZ20n'
 
         self.PID_SWITCH = 0
         self.coolerPID = coolerPID
-        # self.feederPID = feeder
+        self.remote_controlled = remote_controlled
+        self.cooler_pump = cooler_pump
     
     def connect_wifi(self):
         WIFI_SSID = 'Casper'
@@ -63,7 +64,8 @@ class Server:
 
     def subscribe(self):
         self.client.set_callback(self.server_update)
-        self.client.subscribe(self.get_feedname(b'remote-controlled-status'))
+        self.client.subscribe(self.get_feedname(b'remote_controlled'))
+        self.client.subscribe(self.get_feedname(b'cooler_pump_frequency'))
         self.client.subscribe(self.get_feedname(b'cooler_kP'))
         self.client.subscribe(self.get_feedname(b'cooler_kI'))
         self.client.subscribe(self.get_feedname(b'cooler_kD'))
@@ -82,3 +84,11 @@ class Server:
             self.coolerPID.Ki = self.decode_k_msg(msg)
         elif feedname == b'cooler_kD':
             self.coolerPID.Kd = self.decode_k_msg(msg)
+        elif feedname == b'remote_controlled':
+            if msg == b'ON':
+                self.remote_controlled = True
+            else:
+                self.remote_controlled = False
+        elif feedname == b'cooler_pump_frequency':
+            if self.remote_controlled:
+                self.cooler_pump.run(int(msg.decode('utf-8')))
