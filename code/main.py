@@ -5,6 +5,7 @@ from drivers.read_temp import TemperatureSensor
 from drivers.driver_pump_dc import DcPump
 import drivers.driver_od as driver_od
 import drivers.server as server_module
+import drivers.oled_screen as screen
 import time
 import os
 
@@ -25,16 +26,17 @@ class Main:
         print("Connected server successfully")
 
         count_sync = 0
-        count_food = 60*60
+        count_food = 0 
 
         self.start_time = time.time()
 
         while True:
             self.cooling_actions()
 
-            if count_food == 60 * 60:
+            if count_food == 60 * 60 or self.server.feed_mussels:
                 self.food_actions()
                 count_food = 0
+                self.server.feed_mussels = False
 
             self.server.client.check_msg()
 
@@ -45,6 +47,8 @@ class Main:
                 od = self.sensor_od.read_od()
                 self.sync_data_to_server(self.current_temperature, od)
                 self.save_data_locally(self.current_temperature, od)
+
+                screen.screen_on(self.current_temperature, od)
                 
                 count_sync = 0
 
@@ -119,7 +123,8 @@ class Main:
                 self.turn_on_cooler()
 
     def food_actions(self):
-        pump_run_time = 2 # self.calculate_food_pump_run_time()
+        pump_run_time = self.calculate_food_pump_run_time()
+        print(f"Pump runtime: {pump_run_time}")
 
         start_time = time.time()
 
@@ -134,11 +139,11 @@ class Main:
 
     def calculate_food_pump_run_time(self):
         volume = 4000  # mL
-        clearance_rate = 3 * 7.47E-4 # cells / mL / s
+        clearance_rate = 3 * 2.69 / 3600 # cells / mL / s
         time_between = 2 * 60 * 60 # s
         flow_rate = 12 # mL / s
         od = 8250 # self.sensor_od.read_od()
-        cell_concentration = 5.74E+06*exp(-3.42E-4 * od) + -3.13E+5 # cells / mL
+        cell_concentration = 5.745E+06*exp(-3.482E-4 * od) + -3.161E+5 # cells / mL
         initial_concentration = 6000 # cells / mL
 
         pump_run_time = - volume * clearance_rate * time_between / (flow_rate * (-clearance_rate * time_between - cell_concentration + initial_concentration))

@@ -8,12 +8,13 @@ class Server:
     def __init__(self, coolerPID, cooler_pump) -> None:
         self.ADAFRUIT_IO_URL = b'io.adafruit.com'
         self.ADAFRUIT_USERNAME = b'linusjuni'
-        self.ADAFRUIT_IO_KEY = b'aio_gMaH51MWxKfsep8hNOaXpejSNYnt'
+        self.ADAFRUIT_IO_KEY = b'aio_okfY31DJR1JNju3TD8uLyDtHalTd'
 
         self.PID_SWITCH = 0
         self.coolerPID = coolerPID
         self.remote_controlled = False
         self.cooler_pump = cooler_pump
+        self.feed_mussels = False
     
     def connect_wifi(self):
         WIFI_SSID = 'Casper'
@@ -67,6 +68,7 @@ class Server:
         self.client.set_callback(self.server_update)
         self.client.subscribe(self.get_feedname(b'remote_controlled'))
         self.client.subscribe(self.get_feedname(b'cooler_pump_frequency'))
+        self.client.subscribe(self.get_feedname(b'feed_mussels'))
         self.client.subscribe(self.get_feedname(b'cooler_kP'))
         self.client.subscribe(self.get_feedname(b'cooler_kI'))
         self.client.subscribe(self.get_feedname(b'cooler_kD'))
@@ -97,3 +99,5 @@ class Server:
                     self.cooler_pump.stop()
                 else:
                     self.cooler_pump.run(freq)
+        elif feedname == b'feed_mussels':
+            self.feed_mussels = True
