@@ -63,8 +63,7 @@ class Main:
         self.pumpCooler = DcPump(19, 16, 12)
         self.food_pump = DcPump(17, 21, 27)
         
-        self.remote_controlled = False
-        self.server = server_module.Server(self.coolerPID, self.remote_controlled)
+        self.server = server_module.Server(self.coolerPID, self.pumpCooler)
 
         self.initialize_data_file()
 
@@ -103,11 +102,12 @@ class Main:
         server.publish("cooler_kD", - COOLER_KD)
 
     def cooling_actions(self):
+            self.current_temperature = self.sensor_temperature.read_temp()
 
-            if self.remote_controlled:
+            if self.server.remote_controlled:
+                print("Remote controlled")
                 return
             
-            self.current_temperature = self.sensor_temperature.read_temp()
             pid_value = self.coolerPID(self.current_temperature)
             print("Temperature:", str(self.current_temperature))
             print("Running pump with frequency: {}".format(pid_value))
@@ -150,7 +150,6 @@ class Main:
         server.publish("temperature", temperature)
         server.publish("optical-density", od)
         server.publish("cooler_pump_rate", self.pumpCooler.get_flow_rate())
-        server.publish("cooler_pump_frequency", self.pumpCooler.freq)
 
     def save_data_locally(self, temperature, od):
         elapsed_time = time.time() - self.start_time

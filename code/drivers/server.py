@@ -5,14 +5,14 @@ import sys
 import os
 
 class Server:
-    def __init__(self, coolerPID, remote_controlled, cooler_pump) -> None:
+    def __init__(self, coolerPID, cooler_pump) -> None:
         self.ADAFRUIT_IO_URL = b'io.adafruit.com'
         self.ADAFRUIT_USERNAME = b'linusjuni'
-        self.ADAFRUIT_IO_KEY = b'aio_XutB466KSCkYPQOAjUadDZovZ20n'
+        self.ADAFRUIT_IO_KEY = b'aio_gMaH51MWxKfsep8hNOaXpejSNYnt'
 
         self.PID_SWITCH = 0
         self.coolerPID = coolerPID
-        self.remote_controlled = remote_controlled
+        self.remote_controlled = False
         self.cooler_pump = cooler_pump
     
     def connect_wifi(self):
@@ -52,6 +52,7 @@ class Server:
         except Exception as e:
             print('could not connect to MQTT server {}{}'.format(type(e).__name__, e))
             sys.exit()
+        self.publish("remote_controlled", self.remote_controlled)
 
     def get_feedname(self, name):
         return bytes('{:s}/feeds/{:s}'.format(b'linusjuni', name), 'utf-8')
@@ -91,4 +92,8 @@ class Server:
                 self.remote_controlled = False
         elif feedname == b'cooler_pump_frequency':
             if self.remote_controlled:
-                self.cooler_pump.run(int(msg.decode('utf-8')))
+                freq = int(msg.decode('utf-8'))
+                if freq == 0:
+                    self.cooler_pump.stop()
+                else:
+                    self.cooler_pump.run(freq)
